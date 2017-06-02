@@ -11,6 +11,7 @@
 		433266E61EE05979002641B2 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 433266E51EE05979002641B2 /* ViewController.swift */; };
 		433266E81EE05979002641B2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 433266E71EE05979002641B2 /* Assets.xcassets */; };
 		433266EB1EE05979002641B2 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 433266E91EE05979002641B2 /* Main.storyboard */; };
+		43DBAEC21EE207D8007307AD /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 43DBAEC11EE207D8007307AD /* CoreBluetooth.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -20,6 +21,7 @@
 		433266E71EE05979002641B2 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		433266EA1EE05979002641B2 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		433266EC1EE05979002641B2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		43DBAEC11EE207D8007307AD /* CoreBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreBluetooth.framework; path = System/Library/Frameworks/CoreBluetooth.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -27,6 +29,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				43DBAEC21EE207D8007307AD /* CoreBluetooth.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -38,6 +41,7 @@
 			children = (
 				433266E21EE05979002641B2 /* BluetoothTransmitter */,
 				433266E11EE05979002641B2 /* Products */,
+				43DBAEC01EE207D8007307AD /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -59,6 +63,14 @@
 				433266EC1EE05979002641B2 /* Info.plist */,
 			);
 			path = BluetoothTransmitter;
+			sourceTree = "<group>";
+		};
+		43DBAEC01EE207D8007307AD /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				43DBAEC11EE207D8007307AD /* CoreBluetooth.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -291,6 +303,7 @@
 				433266F11EE05979002641B2 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
