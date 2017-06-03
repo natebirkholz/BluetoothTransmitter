@@ -11,7 +11,9 @@ import CoreBluetooth
 
 class ViewController: NSViewController, CBPeripheralManagerDelegate {
 
-    var label: NSTextView!
+    var statusLabel: NSTextView!
+    var subscriberLabel: NSTextView!
+    var buttonLabel: NSTextView!
     var button: NSButton!
     var myServiceUUID = CBUUID(string: "D701F42C-49E1-48E9-B6E2-3862FEB2F550")
     var myCharacteristic: CBCharacteristic!
@@ -19,26 +21,42 @@ class ViewController: NSViewController, CBPeripheralManagerDelegate {
     var subscriber: CBCentral!
     var dateFormatter = DateFormatter()
     var timer: Timer?
+    let redColor = NSColor.red.withAlphaComponent(0.33)
+    let greenColor = NSColor.green.withAlphaComponent(0.33)
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        let labelFor = NSTextView(frame: NSRect(x: 20, y: 20, width: 200, height: 24))
+        let labelFor = NSTextView(frame: NSRect(x: 20, y: 20, width: 120, height: 24))
         labelFor.isEditable = false
         labelFor.string = "On hold..."
-        labelFor.backgroundColor = NSColor.red.withAlphaComponent(0.33)
+        labelFor.backgroundColor = redColor
         view.addSubview(labelFor)
-        label = labelFor
+        statusLabel = labelFor
+
+        let subscriberLabelFor = NSTextView(frame: NSRect(x: 20, y: 60, width: 120, height: 24))
+        subscriberLabelFor.isEditable = false
+        subscriberLabelFor.string = "No subscriber..."
+        subscriberLabelFor.backgroundColor = redColor
+        view.addSubview(subscriberLabelFor)
+        subscriberLabel = subscriberLabelFor
 
         let buttonFor = NSButton()
         buttonFor.title = "SEND"
         buttonFor.action = #selector(buttonClicked)
         buttonFor.target = self
-        buttonFor.frame.origin = NSPoint(x: 20, y: 60)
+        buttonFor.frame.origin = NSPoint(x: 20, y: 100)
         buttonFor.sizeToFit()
-        buttonFor.layer?.backgroundColor = NSColor.red.withAlphaComponent(0.33).cgColor
+        buttonFor.isEnabled = false
         view.addSubview(buttonFor)
         button = buttonFor
+
+        let buttonLabelFor = NSTextView(frame: NSRect(x: buttonFor.frame.maxX + 4, y: buttonFor.frame.origin.y - 4, width: 600, height: 24))
+        buttonLabelFor.isEditable = false
+        buttonLabelFor.backgroundColor = NSColor.clear
+        buttonLabelFor.string = "(Send button enabled when there is a subscriber.)"
+        view.addSubview(buttonLabelFor)
+        buttonLabel = buttonLabelFor
 
         dateFormatter.dateFormat = "HH:mm:ss"
         bluetoothController = CBPeripheralManager(delegate: self, queue: nil, options: nil)
@@ -66,16 +84,22 @@ class ViewController: NSViewController, CBPeripheralManagerDelegate {
     }
 
     func peripheralManager(_ peripheral: CBPeripheralManager, central: CBCentral, didSubscribeTo characteristic: CBCharacteristic) {
+        subscriberLabel.backgroundColor = greenColor
+        subscriberLabel.string = "Subscribed!"
         subscriber = central
+        button.isEnabled = true
     }
 
     func peripheralManager(_ peripheral: CBPeripheralManager, central: CBCentral, didUnsubscribeFrom characteristic: CBCharacteristic) {
         print("--- !! unsubscribe !! ---")
-        // Stop pushing data and set button color appropriately
+        // Stop pushing data and set labels appropriately
         timer?.invalidate()
         timer = nil
-        label.string = "On hold..."
-        label.backgroundColor = NSColor.red.withAlphaComponent(0.33)
+        statusLabel.string = "On hold..."
+        statusLabel.backgroundColor = redColor
+        subscriberLabel.string = "No subscriber..."
+        subscriberLabel.backgroundColor = redColor
+        button.isEnabled = false
     }
 
     func repeatTimestamp() {
@@ -94,17 +118,17 @@ class ViewController: NSViewController, CBPeripheralManagerDelegate {
 
     func buttonClicked() {
         if timer == nil {
-            // Start pushing data. Also update button color to green to indicate running
+            // Start pushing data. Also update label color to green to indicate running
             repeatTimestamp()
-            label.string = "Transmitting..."
-            label.backgroundColor = NSColor.green.withAlphaComponent(0.33)
+            statusLabel.string = "Transmitting..."
+            statusLabel.backgroundColor = greenColor
 
         } else {
-            // Stop pushing data and set button color
+            // Stop pushing data and set label color
             timer?.invalidate()
             timer = nil
-            label.string = "On hold..."
-            label.backgroundColor = NSColor.red.withAlphaComponent(0.33)
+            statusLabel.string = "On hold..."
+            statusLabel.backgroundColor = redColor
         }
     }
 }
