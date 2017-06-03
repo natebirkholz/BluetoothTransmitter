@@ -88,6 +88,11 @@ class ViewController: NSViewController, CBPeripheralManagerDelegate {
         subscriber = central
     }
 
+    func peripheralManager(_ peripheral: CBPeripheralManager, central: CBCentral, didUnsubscribeFrom characteristic: CBCharacteristic) {
+        print(characteristic)
+        print("unsubscribe")
+    }
+
     func repeatAdvertisement() {
         timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [unowned self] (timerRef) in
             guard let maybeTimer = self.timer, maybeTimer.isValid else { return }
