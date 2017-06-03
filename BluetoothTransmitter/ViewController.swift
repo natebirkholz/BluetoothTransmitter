@@ -14,7 +14,6 @@ class ViewController: NSViewController, CBPeripheralManagerDelegate {
     var label: NSTextView!
     var button: NSButton!
     var myServiceUUID: CBUUID!
-    var updateUUID: CBUUID!
 
     var myCharacteristic: CBCharacteristic!
 
@@ -23,6 +22,8 @@ class ViewController: NSViewController, CBPeripheralManagerDelegate {
     var subscriber: CBCentral!
 
     var dateFormatter = DateFormatter()
+
+    var timer: Timer?
 
 
     override func viewDidLoad() {
@@ -44,7 +45,6 @@ class ViewController: NSViewController, CBPeripheralManagerDelegate {
         view.addSubview(buttonFor)
         button = buttonFor
 
-        updateUUID = CBUUID(string: "A7AC8453-5A36-45D3-9F18-576B44299DD8")
 
 
         super.viewDidLoad()
@@ -88,17 +88,30 @@ class ViewController: NSViewController, CBPeripheralManagerDelegate {
         subscriber = central
     }
 
+    func repeatAdvertisement() {
+        timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [unowned self] (timerRef) in
+            guard let maybeTimer = self.timer, maybeTimer.isValid else { return }
+            let datum = Date()
+            let stringFromDate = self.dateFormatter.string(from: datum)
+            let data = stringFromDate.data(using: .utf8)
+            print(data!.count)
+            //        myCharacteristic.value = data
+            let myService = CBMutableService(type: self.myServiceUUID, primary: true)
+            myService.characteristics = [self.myCharacteristic]
+            self.bluetoothController.updateValue(data!, for: self.myCharacteristic as! CBMutableCharacteristic, onSubscribedCentrals: [self.subscriber])
+        }
+
+
+    }
+
 
     func advertise() {
-
-        let datum = Date()
-        let stringFromDate = dateFormatter.string(from: datum)
-        let data = stringFromDate.data(using: .utf8)
-        print(data!.count)
-//        myCharacteristic.value = data
-        let myService = CBMutableService(type: myServiceUUID, primary: true)
-        myService.characteristics = [myCharacteristic]
-        bluetoothController.updateValue(data!, for: myCharacteristic as! CBMutableCharacteristic, onSubscribedCentrals: [subscriber])
+        if timer == nil {
+            repeatAdvertisement()
+        } else {
+            timer?.invalidate()
+            timer = nil
+        }
     }
 
 }
