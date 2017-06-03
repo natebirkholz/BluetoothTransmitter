@@ -13,7 +13,7 @@ class ViewController: NSViewController, CBPeripheralManagerDelegate {
 
     var label: NSTextView!
     var button: NSButton!
-    var myServiceUUID: CBUUID!
+    var myServiceUUID = CBUUID(string: "D701F42C-49E1-48E9-B6E2-3862FEB2F550")
     var myCharacteristic: CBCharacteristic!
     var bluetoothController : CBPeripheralManager!
     var subscriber: CBCentral!
@@ -42,7 +42,6 @@ class ViewController: NSViewController, CBPeripheralManagerDelegate {
 
         dateFormatter.dateFormat = "HH:mm:ss"
         bluetoothController = CBPeripheralManager(delegate: self, queue: nil, options: nil)
-        myServiceUUID = CBUUID(string: "D701F42C-49E1-48E9-B6E2-3862FEB2F550")
         let thisData = [CBAdvertisementDataServiceUUIDsKey: [myServiceUUID]]
         bluetoothController.startAdvertising(thisData)
     }
@@ -85,12 +84,11 @@ class ViewController: NSViewController, CBPeripheralManagerDelegate {
             let datum = Date()
             let stringFromDate = self.dateFormatter.string(from: datum)
             let data = stringFromDate.data(using: .utf8)
-            print(data!.count)
-            //        myCharacteristic.value = data
             let myService = CBMutableService(type: self.myServiceUUID, primary: true)
             myService.characteristics = [self.myCharacteristic]
-            let did = self.bluetoothController.updateValue(data!, for: self.myCharacteristic as! CBMutableCharacteristic, onSubscribedCentrals: [self.subscriber])
-            print("timed \(stringFromDate) \(did)")
+
+            let didSend = self.bluetoothController.updateValue(data!, for: self.myCharacteristic as! CBMutableCharacteristic, onSubscribedCentrals: [self.subscriber])
+            print("timed at \(stringFromDate), didSend: \(didSend)")
         }
     }
 
