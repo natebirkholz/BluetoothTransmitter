@@ -27,36 +27,32 @@ class ViewController: NSViewController, CBPeripheralManagerDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        let labelFor = NSTextView(frame: NSRect(x: 20, y: 20, width: 120, height: 24))
-        labelFor.isEditable = false
-        labelFor.string = "On hold..."
-        labelFor.backgroundColor = redColor
-        view.addSubview(labelFor)
-        statusLabel = labelFor
+        statusLabel = NSTextView(frame: NSRect(x: 20, y: 20, width: 120, height: 24))
+        statusLabel.isEditable = false
+        statusLabel.string = "On hold..."
+        statusLabel.backgroundColor = redColor
+        view.addSubview(statusLabel)
 
-        let subscriberLabelFor = NSTextView(frame: NSRect(x: 20, y: 60, width: 120, height: 24))
-        subscriberLabelFor.isEditable = false
-        subscriberLabelFor.string = "No subscriber..."
-        subscriberLabelFor.backgroundColor = redColor
-        view.addSubview(subscriberLabelFor)
-        subscriberLabel = subscriberLabelFor
+        subscriberLabel = NSTextView(frame: NSRect(x: 20, y: 60, width: 120, height: 24))
+        subscriberLabel.isEditable = false
+        subscriberLabel.string = "No subscriber..."
+        subscriberLabel.backgroundColor = redColor
+        view.addSubview(subscriberLabel)
 
-        let buttonFor = NSButton()
-        buttonFor.title = "SEND"
-        buttonFor.action = #selector(buttonClicked)
-        buttonFor.target = self
-        buttonFor.frame.origin = NSPoint(x: 20, y: 100)
-        buttonFor.sizeToFit()
-        buttonFor.isEnabled = false
-        view.addSubview(buttonFor)
-        button = buttonFor
+        button = NSButton()
+        button.title = "SEND"
+        button.action = #selector(buttonClicked)
+        button.target = self
+        button.frame.origin = NSPoint(x: 20, y: 100)
+        button.sizeToFit()
+        button.isEnabled = false
+        view.addSubview(button)
 
-        let buttonLabelFor = NSTextView(frame: NSRect(x: buttonFor.frame.maxX + 4, y: buttonFor.frame.origin.y - 4, width: 600, height: 24))
-        buttonLabelFor.isEditable = false
-        buttonLabelFor.backgroundColor = NSColor.clear
-        buttonLabelFor.string = "(Send button enabled when there is a subscriber.)"
-        view.addSubview(buttonLabelFor)
-        buttonLabel = buttonLabelFor
+        buttonLabel = NSTextView(frame: NSRect(x: button.frame.maxX + 4, y: button.frame.origin.y - 4, width: 600, height: 24))
+        buttonLabel.isEditable = false
+        buttonLabel.backgroundColor = NSColor.clear
+        buttonLabel.string = "(Send button enabled when there is a subscriber.)"
+        view.addSubview(buttonLabel)
 
         dateFormatter.dateFormat = "HH:mm:ss"
         bluetoothController = CBPeripheralManager(delegate: self, queue: nil, options: nil)
