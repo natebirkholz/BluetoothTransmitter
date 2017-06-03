@@ -23,12 +23,12 @@ class ViewController: NSViewController, CBPeripheralManagerDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        let text = NSTextView(frame: NSRect(x: 20, y: 20, width: 200, height: 24))
-        text.isEditable = false
-        text.string = "On hold..."
-        text.backgroundColor = NSColor.red.withAlphaComponent(0.33)
-        label = text
-        view.addSubview(text)
+        let labelFor = NSTextView(frame: NSRect(x: 20, y: 20, width: 200, height: 24))
+        labelFor.isEditable = false
+        labelFor.string = "On hold..."
+        labelFor.backgroundColor = NSColor.red.withAlphaComponent(0.33)
+        view.addSubview(labelFor)
+        label = labelFor
 
         let buttonFor = NSButton()
         buttonFor.title = "SEND"
@@ -42,8 +42,8 @@ class ViewController: NSViewController, CBPeripheralManagerDelegate {
 
         dateFormatter.dateFormat = "HH:mm:ss"
         bluetoothController = CBPeripheralManager(delegate: self, queue: nil, options: nil)
-        let thisData = [CBAdvertisementDataServiceUUIDsKey: [myServiceUUID]]
-        bluetoothController.startAdvertising(thisData)
+        let advertisement = [CBAdvertisementDataServiceUUIDsKey: [myServiceUUID]]
+        bluetoothController.startAdvertising(advertisement)
     }
 
     override var representedObject: Any? {
