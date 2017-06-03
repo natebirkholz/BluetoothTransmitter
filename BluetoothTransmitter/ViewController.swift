@@ -17,7 +17,7 @@ class ViewController: NSViewController, CBPeripheralManagerDelegate {
     var button: NSButton!
     var myServiceUUID = CBUUID(string: "D701F42C-49E1-48E9-B6E2-3862FEB2F550")
     var myCharacteristic: CBCharacteristic!
-    var bluetoothController : CBPeripheralManager!
+    var peripheralManager : CBPeripheralManager!
     var subscriber: CBCentral!
     var dateFormatter = DateFormatter()
     var timer: Timer?
@@ -55,9 +55,9 @@ class ViewController: NSViewController, CBPeripheralManagerDelegate {
         view.addSubview(buttonLabel)
 
         dateFormatter.dateFormat = "HH:mm:ss"
-        bluetoothController = CBPeripheralManager(delegate: self, queue: nil, options: nil)
+        peripheralManager = CBPeripheralManager(delegate: self, queue: nil, options: nil)
         let advertisement = [CBAdvertisementDataServiceUUIDsKey: [myServiceUUID]]
-        bluetoothController.startAdvertising(advertisement)
+        peripheralManager.startAdvertising(advertisement)
     }
 
     override var representedObject: Any? {
@@ -70,7 +70,7 @@ class ViewController: NSViewController, CBPeripheralManagerDelegate {
         myCharacteristic = CBMutableCharacteristic(type: myServiceUUID, properties: [CBCharacteristicProperties.read, CBCharacteristicProperties.notify], value: nil, permissions: CBAttributePermissions.readable)
         let myService = CBMutableService(type: myServiceUUID, primary: true)
         myService.characteristics = [myCharacteristic]
-        bluetoothController.add(myService)
+        peripheralManager.add(myService)
     }
 
     func peripheralManager(_ peripheral: CBPeripheralManager, didAdd service: CBService, error: Error?) {
@@ -107,7 +107,7 @@ class ViewController: NSViewController, CBPeripheralManagerDelegate {
             let myService = CBMutableService(type: self.myServiceUUID, primary: true)
             myService.characteristics = [self.myCharacteristic]
 
-            let didSend = self.bluetoothController.updateValue(data!, for: self.myCharacteristic as! CBMutableCharacteristic, onSubscribedCentrals: [self.subscriber])
+            let didSend = self.peripheralManager.updateValue(data!, for: self.myCharacteristic as! CBMutableCharacteristic, onSubscribedCentrals: [self.subscriber])
             print("timed at \(stringFromDate), didSend: \(didSend)")
         }
     }
