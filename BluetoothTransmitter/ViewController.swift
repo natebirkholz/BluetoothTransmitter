@@ -98,7 +98,8 @@ class ViewController: NSViewController, CBPeripheralManagerDelegate {
             //        myCharacteristic.value = data
             let myService = CBMutableService(type: self.myServiceUUID, primary: true)
             myService.characteristics = [self.myCharacteristic]
-            self.bluetoothController.updateValue(data!, for: self.myCharacteristic as! CBMutableCharacteristic, onSubscribedCentrals: [self.subscriber])
+            let did = self.bluetoothController.updateValue(data!, for: self.myCharacteristic as! CBMutableCharacteristic, onSubscribedCentrals: [self.subscriber])
+            print("timed \(stringFromDate) \(did)")
         }
 
 
