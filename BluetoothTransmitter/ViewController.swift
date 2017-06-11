@@ -15,12 +15,15 @@ class ViewController: NSViewController, CBPeripheralManagerDelegate {
     var subscriberLabel: NSTextView!
     var buttonLabel: NSTextView!
     var button: NSButton!
-    var myServiceUUID = CBUUID(string: "D701F42C-49E1-48E9-B6E2-3862FEB2F550")
-    var myCharacteristic: CBCharacteristic!
+
+    var streamServiceUuid = CBUUID(string: "D701F42C-49E1-48E9-B6E2-3862FEB2F550")
+    var streamService: CBMutableService!
+    var streamCharacteristic: CBCharacteristic!
+
     var peripheralManager : CBPeripheralManager!
     var subscriber: CBCentral!
     var dateFormatter = DateFormatter()
-    var timer: Timer?
+    var streamTimer: Timer?
     let redColor = NSColor.red.withAlphaComponent(0.33)
     let greenColor = NSColor.green.withAlphaComponent(0.33)
 
@@ -56,7 +59,7 @@ class ViewController: NSViewController, CBPeripheralManagerDelegate {
 
         dateFormatter.dateFormat = "HH:mm:ss"
         peripheralManager = CBPeripheralManager(delegate: self, queue: nil, options: nil)
-        let advertisement = [CBAdvertisementDataServiceUUIDsKey: [myServiceUUID]]
+        let advertisement = [CBAdvertisementDataServiceUUIDsKey: [streamServiceUuid]]
         peripheralManager.startAdvertising(advertisement)
     }
 
@@ -67,10 +70,10 @@ class ViewController: NSViewController, CBPeripheralManagerDelegate {
     }
 
     func peripheralManagerDidUpdateState(_ peripheral: CBPeripheralManager) {
-        myCharacteristic = CBMutableCharacteristic(type: myServiceUUID, properties: [CBCharacteristicProperties.read, CBCharacteristicProperties.notify], value: nil, permissions: CBAttributePermissions.readable)
-        let myService = CBMutableService(type: myServiceUUID, primary: true)
-        myService.characteristics = [myCharacteristic]
-        peripheralManager.add(myService)
+        streamCharacteristic = CBMutableCharacteristic(type: streamServiceUuid, properties: [CBCharacteristicProperties.read, CBCharacteristicProperties.notify], value: nil, permissions: CBAttributePermissions.readable)
+        streamService = CBMutableService(type: streamServiceUuid, primary: true)
+        streamService.characteristics = [streamCharacteristic]
+        peripheralManager.add(streamService)
     }
 
     func peripheralManager(_ peripheral: CBPeripheralManager, didAdd service: CBService, error: Error?) {
@@ -89,8 +92,8 @@ class ViewController: NSViewController, CBPeripheralManagerDelegate {
     func peripheralManager(_ peripheral: CBPeripheralManager, central: CBCentral, didUnsubscribeFrom characteristic: CBCharacteristic) {
         print("--- !! unsubscribe !! ---")
         // Stop pushing data and set labels appropriately
-        timer?.invalidate()
-        timer = nil
+        streamTimer?.invalidate()
+        streamTimer = nil
         statusLabel.string = "On hold..."
         statusLabel.backgroundColor = redColor
         subscriberLabel.string = "No subscriber..."
@@ -99,21 +102,19 @@ class ViewController: NSViewController, CBPeripheralManagerDelegate {
     }
 
     func repeatTimestamp() {
-        timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [unowned self] (timerRef) in
-            guard let maybeTimer = self.timer, maybeTimer.isValid else { return }
+        streamTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [unowned self] (timerRef) in
+            guard let maybeTimer = self.streamTimer, maybeTimer.isValid else { return }
             let datum = Date()
             let stringFromDate = self.dateFormatter.string(from: datum)
             let data = stringFromDate.data(using: .utf8)
-            let myService = CBMutableService(type: self.myServiceUUID, primary: true)
-            myService.characteristics = [self.myCharacteristic]
 
-            let didSend = self.peripheralManager.updateValue(data!, for: self.myCharacteristic as! CBMutableCharacteristic, onSubscribedCentrals: [self.subscriber])
-            print("timed at \(stringFromDate), didSend: \(didSend)")
+            let didSend = self.peripheralManager.updateValue(data!, for: self.streamCharacteristic as! CBMutableCharacteristic, onSubscribedCentrals: [self.subscriber])
+            print("stream timed at \(stringFromDate), didSend: \(didSend)")
         }
     }
 
     func buttonClicked() {
-        if timer == nil {
+        if streamTimer == nil {
             // Start pushing data. Also update label color to green to indicate running
             repeatTimestamp()
             statusLabel.string = "Transmitting..."
@@ -121,8 +122,8 @@ class ViewController: NSViewController, CBPeripheralManagerDelegate {
 
         } else {
             // Stop pushing data and set label color
-            timer?.invalidate()
-            timer = nil
+            streamTimer?.invalidate()
+            streamTimer = nil
             statusLabel.string = "On hold..."
             statusLabel.backgroundColor = redColor
         }
