@@ -11,17 +11,17 @@ import CoreBluetooth
 
 class ViewController: NSViewController, CBPeripheralManagerDelegate {
 
-    var statusLabel: NSTextView!
-    var subscriberLabel: NSTextView!
-    var buttonLabel: NSTextView!
-    var button: NSButton!
+    var statusLabel: NSTextView?
+    var subscriberLabel: NSTextView?
+    var sendButtonLabel: NSTextView?
+    var sendButton: NSButton?
 
     var streamServiceUuid = CBUUID(string: "D701F42C-49E1-48E9-B6E2-3862FEB2F550")
-    var streamService: CBMutableService!
-    var streamCharacteristic: CBCharacteristic!
+    var streamService: CBMutableService?
+    var streamCharacteristic: CBMutableCharacteristic?
 
-    var peripheralManager : CBPeripheralManager!
-    var subscriber: CBCentral!
+    var peripheralManager : CBPeripheralManager?
+    var subscriber: CBCentral?
     var dateFormatter = DateFormatter()
     var streamTimer: Timer?
     let redColor = NSColor.red.withAlphaComponent(0.33)
@@ -30,37 +30,42 @@ class ViewController: NSViewController, CBPeripheralManagerDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        statusLabel = NSTextView(frame: NSRect(x: 20, y: 20, width: 120, height: 24))
+        let statusLabel = NSTextView(frame: NSRect(x: 20, y: 20, width: 120, height: 24))
         statusLabel.isEditable = false
         statusLabel.string = "On hold..."
         statusLabel.backgroundColor = redColor
         view.addSubview(statusLabel)
+        self.statusLabel = statusLabel
 
-        subscriberLabel = NSTextView(frame: NSRect(x: 20, y: 60, width: 120, height: 24))
+        let subscriberLabel = NSTextView(frame: NSRect(x: 20, y: 60, width: 120, height: 24))
         subscriberLabel.isEditable = false
         subscriberLabel.string = "No subscriber..."
         subscriberLabel.backgroundColor = redColor
         view.addSubview(subscriberLabel)
+        self.subscriberLabel = subscriberLabel
 
-        button = NSButton()
-        button.title = "SEND"
-        button.action = #selector(buttonClicked)
-        button.target = self
-        button.frame.origin = NSPoint(x: 20, y: 100)
-        button.sizeToFit()
-        button.isEnabled = false
-        view.addSubview(button)
+        let sendButton = NSButton()
+        sendButton.title = "SEND"
+        sendButton.action = #selector(buttonClicked)
+        sendButton.target = self
+        sendButton.frame.origin = NSPoint(x: 20, y: 100)
+        sendButton.sizeToFit()
+        sendButton.isEnabled = false
+        view.addSubview(sendButton)
 
-        buttonLabel = NSTextView(frame: NSRect(x: button.frame.maxX + 4, y: button.frame.origin.y - 4, width: 600, height: 24))
-        buttonLabel.isEditable = false
-        buttonLabel.backgroundColor = NSColor.clear
-        buttonLabel.string = "(Send button enabled when there is a subscriber.)"
-        view.addSubview(buttonLabel)
+        let sendButtonLabel = NSTextView(frame: NSRect(x: sendButton.frame.maxX + 4, y: sendButton.frame.origin.y - 4, width: 600, height: 24))
+        sendButtonLabel.isEditable = false
+        sendButtonLabel.backgroundColor = NSColor.clear
+        sendButtonLabel.string = "(Send button enabled when there is a subscriber.)"
+        view.addSubview(sendButtonLabel)
 
-        dateFormatter.dateFormat = "HH:mm:ss"
-        peripheralManager = CBPeripheralManager(delegate: self, queue: nil, options: nil)
-        let advertisement = [CBAdvertisementDataServiceUUIDsKey: [streamServiceUuid]]
-        peripheralManager.startAdvertising(advertisement)
+        self.sendButton = sendButton
+        self.sendButtonLabel = sendButtonLabel
+
+        self.dateFormatter.dateFormat = "HH:mm:ss"
+        self.peripheralManager = CBPeripheralManager(delegate: self, queue: nil, options: nil)
+        let advertisement = [CBAdvertisementDataServiceUUIDsKey: [self.streamServiceUuid]]
+        self.peripheralManager?.startAdvertising(advertisement)
     }
 
     override var representedObject: Any? {
@@ -70,10 +75,13 @@ class ViewController: NSViewController, CBPeripheralManagerDelegate {
     }
 
     func peripheralManagerDidUpdateState(_ peripheral: CBPeripheralManager) {
-        streamCharacteristic = CBMutableCharacteristic(type: streamServiceUuid, properties: [CBCharacteristicProperties.read, CBCharacteristicProperties.notify], value: nil, permissions: CBAttributePermissions.readable)
-        streamService = CBMutableService(type: streamServiceUuid, primary: true)
+        let streamCharacteristic = CBMutableCharacteristic(type: streamServiceUuid, properties: [CBCharacteristicProperties.read, CBCharacteristicProperties.notify], value: nil, permissions: CBAttributePermissions.readable)
+        let streamService = CBMutableService(type: streamServiceUuid, primary: true)
         streamService.characteristics = [streamCharacteristic]
-        peripheralManager.add(streamService)
+        self.peripheralManager?.add(streamService)
+
+        self.streamCharacteristic = streamCharacteristic
+        self.streamService = streamService
     }
 
     func peripheralManager(_ peripheral: CBPeripheralManager, didAdd service: CBService, error: Error?) {
@@ -83,10 +91,10 @@ class ViewController: NSViewController, CBPeripheralManagerDelegate {
     }
 
     func peripheralManager(_ peripheral: CBPeripheralManager, central: CBCentral, didSubscribeTo characteristic: CBCharacteristic) {
-        subscriberLabel.backgroundColor = greenColor
-        subscriberLabel.string = "Subscribed!"
+        subscriberLabel?.backgroundColor = greenColor
+        subscriberLabel?.string = "Subscribed!"
         subscriber = central
-        button.isEnabled = true
+        sendButton?.isEnabled = true
     }
 
     func peripheralManager(_ peripheral: CBPeripheralManager, central: CBCentral, didUnsubscribeFrom characteristic: CBCharacteristic) {
@@ -94,22 +102,25 @@ class ViewController: NSViewController, CBPeripheralManagerDelegate {
         // Stop pushing data and set labels appropriately
         streamTimer?.invalidate()
         streamTimer = nil
-        statusLabel.string = "On hold..."
-        statusLabel.backgroundColor = redColor
-        subscriberLabel.string = "No subscriber..."
-        subscriberLabel.backgroundColor = redColor
-        button.isEnabled = false
+        statusLabel?.string = "On hold..."
+        statusLabel?.backgroundColor = redColor
+        subscriberLabel?.string = "No subscriber..."
+        subscriberLabel?.backgroundColor = redColor
+        sendButton?.isEnabled = false
     }
 
     func repeatTimestamp() {
         streamTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [unowned self] (timerRef) in
             guard let maybeTimer = self.streamTimer, maybeTimer.isValid else { return }
+            guard let subscriber = self.subscriber else { return }
+            guard let streamCharacteristic = self.streamCharacteristic else { return }
+
             let datum = Date()
             let stringFromDate = self.dateFormatter.string(from: datum)
             let data = stringFromDate.data(using: .utf8)
 
-            let didSend = self.peripheralManager.updateValue(data!, for: self.streamCharacteristic as! CBMutableCharacteristic, onSubscribedCentrals: [self.subscriber])
-            print("stream timed at \(stringFromDate), didSend: \(didSend)")
+            let didSend = self.peripheralManager?.updateValue(data!, for: streamCharacteristic, onSubscribedCentrals: [subscriber])
+            print("stream timed at \(stringFromDate), didSend: \(String(describing: didSend))")
         }
     }
 
@@ -117,15 +128,15 @@ class ViewController: NSViewController, CBPeripheralManagerDelegate {
         if streamTimer == nil {
             // Start pushing data. Also update label color to green to indicate running
             repeatTimestamp()
-            statusLabel.string = "Transmitting..."
-            statusLabel.backgroundColor = greenColor
+            statusLabel?.string = "Transmitting..."
+            statusLabel?.backgroundColor = greenColor
 
         } else {
             // Stop pushing data and set label color
             streamTimer?.invalidate()
             streamTimer = nil
-            statusLabel.string = "On hold..."
-            statusLabel.backgroundColor = redColor
+            statusLabel?.string = "On hold..."
+            statusLabel?.backgroundColor = redColor
         }
     }
 }
